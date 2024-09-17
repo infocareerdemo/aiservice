@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.ai.config.JwtUtil;
 import com.ai.dto.UsersDto;
+import com.ai.encrypt.CryptoUtils;
 import com.ai.entity.Users;
 import com.ai.exception.ApplicationException;
 import com.ai.repository.UserRepository;
@@ -27,14 +28,21 @@ public class UserService {
 	JwtUtil jwtUtil;
 	
 
-	public Users saveUser(UsersDto usersDto) {
-		
+	@Autowired
+	CryptoUtils cryptoUtils;
+	
+
+	public Users saveUser(UsersDto usersDto) throws Exception {
 	    Users user = new Users();
 	    user.setUsername(usersDto.getUsername());
-	    user.setPassword(usersDto.getPassword());
-	  
-		userRepository.save(user);	
-		return user;
+
+	    if (usersDto.getPassword() != null) {
+	        String encryptedPassword = cryptoUtils.encrypt(usersDto.getPassword());
+	        user.setPassword(encryptedPassword);
+	    }
+
+	    userRepository.save(user);
+	    return user;
 	}
 	
 	
